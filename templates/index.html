@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Lost & Found</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDE6D6; --card:#FAF6EC; --ink:#2A2521; --ink-soft:#6b6255;
+  --lost:#A63A2C; --found:#3F6E5B; --thread:#B8901E; --line:#d9cfba;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'Inter',sans-serif; line-height:1.5;
+  background-image:radial-gradient(circle,#e2d8c1 1px,transparent 1px);
+  background-size:16px 16px; min-height:100vh;
+}
+header{padding:2.5rem 1.5rem 1rem; text-align:center}
+header h1{font-family:'Fraunces',serif; font-weight:600; font-size:2.4rem; margin:0 0 .3rem; position:relative; display:inline-block}
+header h1::before{content:''; position:absolute; top:-10px; left:50%; transform:translateX(-50%); width:14px; height:14px; border-radius:50%; background:var(--thread); box-shadow:0 2px 3px rgba(0,0,0,.35)}
+header p{color:var(--ink-soft); margin:0; font-size:.95rem}
+nav{display:flex; justify-content:center; gap:.4rem; margin:1.5rem auto 0; max-width:640px; border-bottom:1px solid var(--line); padding:0 1rem}
+nav button{font-family:'Inter',sans-serif; font-weight:500; font-size:.92rem; background:none; border:none; padding:.7rem 1.1rem; cursor:pointer; color:var(--ink-soft); border-bottom:2px solid transparent; margin-bottom:-1px}
+nav button.active{color:var(--ink); border-bottom-color:var(--thread)}
+main{max-width:640px; margin:1.5rem auto 4rem; padding:0 1.2rem}
+section{display:none} section.active{display:block}
+.card{background:var(--card); border-radius:2px; padding:1.4rem 1.5rem; margin-bottom:1.1rem; box-shadow:0 3px 8px rgba(42,37,33,.1); border-left:4px solid var(--line)}
+.card.lost{border-left-color:var(--lost)} .card.found{border-left-color:var(--found)}
+form label{display:block; font-size:.82rem; color:var(--ink-soft); margin:.9rem 0 .3rem}
+form label:first-child{margin-top:0}
+input,textarea,select{width:100%; font-family:'Inter',sans-serif; font-size:.95rem; padding:.55rem .65rem; border:1px solid var(--line); border-radius:3px; background:#fff; color:var(--ink)}
+textarea{resize:vertical; min-height:60px}
+button.submit{margin-top:1.2rem; font-family:'Inter',sans-serif; font-weight:600; font-size:.92rem; padding:.65rem 1.3rem; border:none; border-radius:3px; cursor:pointer; color:#fff}
+.lost-tab button.submit{background:var(--lost)} .found-tab button.submit{background:var(--found)}
+.pill{display:inline-block; font-size:.72rem; font-weight:600; padding:.15rem .55rem; border-radius:12px; color:#fff; margin-left:.5rem; vertical-align:middle}
+.pill.lost{background:var(--lost)} .pill.found{background:var(--found)}
+.item-title{font-family:'Fraunces',serif; font-size:1.15rem; margin:0 0 .2rem}
+.meta{font-size:.83rem; color:var(--ink-soft); margin:0 0 .5rem}
+.desc{font-size:.9rem; margin:0}
+.thumb{max-width:100%; border-radius:3px; margin-top:.6rem; display:block}
+.match-result{margin-top:.9rem; padding-top:.9rem; border-top:1px dashed var(--line)}
+.score{font-weight:600; font-size:.8rem; padding:.2rem .5rem; border-radius:10px; background:var(--thread); color:#fff; float:right}
+.empty{color:var(--ink-soft); font-size:.9rem; text-align:center; padding:2rem 0}
+.field-row{display:flex; gap:.7rem}
+.field-row > div{flex:1}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Campus Lost & Found</h1>
+  <p>Report what you've lost or found — the board looks for the match.</p>
+</header>
+
+<nav>
+  <button data-tab="lost" class="active">Report Lost</button>
+  <button data-tab="found">Report Found</button>
+  <button data-tab="match">Find a Match</button>
+</nav>
+
+<main>
+
+<section id="lost" class="active">
+  <div class="card lost lost-tab">
+    <form id="lostForm">
+      <label>Item name</label>
+      <input required id="l-name" placeholder="e.g. College ID Card">
+      <div class="field-row">
+        <div><label>Where it was lost</label><input required id="l-loc" placeholder="e.g. Library, 2nd floor"></div>
+        <div><label>Approximate time</label><input required type="datetime-local" id="l-time"></div>
+      </div>
+      <label>Description / photo</label>
+      <textarea id="l-desc" placeholder="Any identifying details"></textarea>
+      <input type="file" id="l-photo" accept="image/*" style="margin-top:.5rem">
+      <button class="submit" type="submit">Submit lost report</button>
+    </form>
+  </div>
+  <div id="lostList"></div>
+</section>
+
+<section id="found">
+  <div class="card found found-tab">
+    <form id="foundForm">
+      <label>Item name</label>
+      <input required id="f-name" placeholder="e.g. Black wallet">
+      <div class="field-row">
+        <div><label>Where it was found</label><input required id="f-loc" placeholder="e.g. Canteen"></div>
+        <div><label>Approximate time</label><input required type="datetime-local" id="f-time"></div>
+      </div>
+      <label>Description / photo</label>
+      <textarea id="f-desc" placeholder="Any identifying details"></textarea>
+      <input type="file" id="f-photo" accept="image/*" style="margin-top:.5rem">
+      <button class="submit" type="submit">Submit found report</button>
+    </form>
+  </div>
+  <div id="foundList"></div>
+</section>
+
+<section id="match">
+  <div class="card">
+    <label>I'm looking at reports of</label>
+    <select id="originStore">
+      <option value="lost">Lost items</option>
+      <option value="found">Found items</option>
+    </select>
+    <label>Pick a report</label>
+    <select id="originPick"></select>
+    <div id="matchOut"></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+async function api(path, opts){
+  const res = await fetch(path, opts);
+  if(!res.ok) throw new Error((await res.json()).error || res.statusText);
+  return res.json();
+}
+function fileToDataURL(file){
+  return new Promise(res=>{
+    if(!file){ res(null); return; }
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.readAsDataURL(file);
+  });
+}
+function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function cardHTML(item, kind){
+  const photo = item.photo ? `<img class="thumb" src="${item.photo}">` : '';
+  return `<div class="card ${kind}">
+    <span class="pill ${kind}">${kind}</span>
+    <p class="item-title">${escapeHTML(item.name)}</p>
+    <p class="meta">${escapeHTML(item.loc)} · ${new Date(item.time).toLocaleString()}</p>
+    <p class="desc">${escapeHTML(item.desc||'')}</p>
+    ${photo}
+  </div>`;
+}
+
+async function renderAll(){
+  const [lost, found] = await Promise.all([api('/api/lost'), api('/api/found')]);
+  document.getElementById('lostList').innerHTML = lost.length
+    ? lost.map(i=>cardHTML(i,'lost')).join('') : '<p class="empty">No lost items reported yet.</p>';
+  document.getElementById('foundList').innerHTML = found.length
+    ? found.map(i=>cardHTML(i,'found')).join('') : '<p class="empty">No found items reported yet.</p>';
+  refreshOriginPick();
+}
+
+async function refreshOriginPick(){
+  const src = document.getElementById('originStore').value;
+  const items = await api('/api/' + src);
+  const pick = document.getElementById('originPick');
+  pick.innerHTML = items.length
+    ? items.map(i=>`<option value="${i.id}">${escapeHTML(i.name)} — ${escapeHTML(i.loc)}</option>`).join('')
+    : '<option value="">Nothing reported yet</option>';
+  showMatches();
+}
+
+async function showMatches(){
+  const src = document.getElementById('originStore').value;
+  const id = document.getElementById('originPick').value;
+  const out = document.getElementById('matchOut');
+  if(!id){ out.innerHTML=''; return; }
+  const { target, matches } = await api(`/api/match/${src}/${id}`);
+  out.innerHTML = '<div class="match-result">' + (matches.length
+    ? matches.map(x=>`<div class="score">${x.score}% match</div>${cardHTML(x.item, target)}`).join('')
+    : `<p class="empty">No likely matches among ${target} reports yet.</p>`) + '</div>';
+}
+
+document.getElementById('originStore').onchange = refreshOriginPick;
+document.getElementById('originPick').onchange = showMatches;
+
+document.getElementById('lostForm').onsubmit = async e=>{
+  e.preventDefault();
+  const photo = await fileToDataURL(document.getElementById('l-photo').files[0]);
+  await api('/api/lost', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+    name:document.getElementById('l-name').value,
+    loc:document.getElementById('l-loc').value,
+    time:document.getElementById('l-time').value,
+    desc:document.getElementById('l-desc').value,
+    photo
+  })});
+  e.target.reset();
+  renderAll();
+};
+document.getElementById('foundForm').onsubmit = async e=>{
+  e.preventDefault();
+  const photo = await fileToDataURL(document.getElementById('f-photo').files[0]);
+  await api('/api/found', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+    name:document.getElementById('f-name').value,
+    loc:document.getElementById('f-loc').value,
+    time:document.getElementById('f-time').value,
+    desc:document.getElementById('f-desc').value,
+    photo
+  })});
+  e.target.reset();
+  renderAll();
+};
+
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='match') refreshOriginPick();
+  };
+});
+
+renderAll();
+</script>
+</body>
+</html>
